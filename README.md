@@ -24,22 +24,27 @@ venv\Scripts\activate           # Windows
 pip install -r requirements.txt
 ```
 
-### 4. Buat database PostgreSQL
-```sql
-CREATE DATABASE incampus_db;
+### 4. Menjalankan Database & pgAdmin (Docker)
+Pastikan Docker sudah berjalan, lalu gunakan perintah ini untuk menjalankan infrastruktur di background:
+```bash
+docker-compose up -d
 ```
 
 ### 5. Konfigurasi environment
 ```bash
-cp .env.example .env
+cp .env.example .env  # Jika belum ada
 # Edit .env sesuai konfigurasi database kamu
 ```
 
-### 6. Jalankan server
+### 6. Jalankan server (Mode Development)
+Gunakan script pembantu untuk menjalankan database dan API sekaligus dengan **Hot-Reload**:
+```bash
+./dev.sh
+```
+Atau jalankan secara manual:
 ```bash
 uvicorn app.main:app --reload
 ```
-
 Tabel akan dibuat otomatis saat server pertama kali dijalankan.
 
 ## Migrasi (opsional, untuk production)
@@ -47,28 +52,3 @@ Tabel akan dibuat otomatis saat server pertama kali dijalankan.
 alembic revision --autogenerate -m "initial"
 alembic upgrade head
 ```
-
-## Struktur endpoint
-
-| Method | Endpoint | Akses | Keterangan |
-|--------|----------|-------|------------|
-| POST | `/auth/register` | Public | Daftar akun |
-| POST | `/auth/login` | Public | Login, dapat JWT |
-| GET | `/canteens` | Public | Daftar kantin buka |
-| POST | `/canteens` | Canteen/Admin | Buat kantin |
-| GET | `/canteens/{id}/menu` | Public | Lihat menu |
-| POST | `/canteens/{id}/menu` | Canteen/Admin | Tambah menu |
-| GET | `/delivery-points` | Public | Titik antar |
-| POST | `/delivery-points` | Admin | Tambah titik antar |
-| POST | `/orders` | Customer | Buat pesanan |
-| GET | `/orders/me` | Customer | Pesanan saya |
-| GET | `/orders/canteen` | Canteen | Pesanan masuk |
-| PATCH | `/orders/{id}/status` | Canteen/Admin | Update status |
-| POST | `/payments` | Customer | Bayar pesanan |
-| GET | `/notifications` | All | Notifikasi saya |
-
-## Role sistem
-
-- `customer` — mahasiswa/staff, bisa pesan makanan
-- `canteen` — pemilik kantin, kelola menu & status pesanan
-- `admin` — akses penuh
