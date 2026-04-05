@@ -28,3 +28,4 @@ class User(Base):
     orders = relationship("Order", back_populates="user", foreign_keys="Order.user_id")
     canteen = relationship("Canteen", back_populates="owner", uselist=False)
     notifications = relationship("Notification", back_populates="user")
+    delivery_points = relationship("DeliveryPoint", back_populates="user")

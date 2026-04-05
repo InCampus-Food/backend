@@ -17,10 +17,11 @@ def get_canteen_by_id(db: Session, canteen_id: int) -> Canteen:
     return canteen
 
 
-def get_canteen_by_owner(db: Session, user_id: int) -> Canteen:
+def get_canteen_by_owner(db: Session, user_id: int):
+    from fastapi import HTTPException
     canteen = db.query(Canteen).filter(Canteen.user_id == user_id).first()
     if not canteen:
-        raise HTTPException(status_code=404, detail="You don't have a canteen")
+        raise HTTPException(status_code=404, detail="Canteen not found")
     return canteen
 
 

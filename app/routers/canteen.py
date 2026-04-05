@@ -16,6 +16,12 @@ router = APIRouter(prefix="/canteens", tags=["Canteens"])
 def list_canteens(db: Session = Depends(get_db)):
     return canteen_service.get_all_open_canteens(db)
 
+@router.get("/me", response_model=CanteenResponse)
+def get_my_canteen(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.canteen, UserRole.admin)),
+):
+    return canteen_service.get_canteen_by_owner(db, current_user.id)
 
 @router.get("/{canteen_id}", response_model=CanteenResponse)
 def get_canteen(canteen_id: int, db: Session = Depends(get_db)):

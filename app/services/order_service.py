@@ -214,3 +214,27 @@ def cancel_order(db: Session, order_id: int, current_user: User) -> Order:
     db.commit()
     db.refresh(order)
     return order
+
+def confirm_and_cook(db: Session, order_id: int, current_user: User) -> Order:
+    order = _get_order_or_404(db, order_id)
+
+    if order.status != OrderStatus.pending:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Order harus dalam status 'pending', sekarang '{order.status.value}'"
+        )
+
+    # Skip confirmed, langsung ke preparing
+    order.status = OrderStatus.preparing
+
+    create_notification(
+        db,
+        user_id=order.user_id,
+        order_id=order.id,
+        title="Pesanan dikonfirmasi & dimasak",
+        message="Kantin telah mengkonfirmasi pesananmu dan sedang memasaknya.",
+    )
+
+    db.commit()
+    db.refresh(order)
+    return order

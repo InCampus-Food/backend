@@ -48,3 +48,43 @@ async def logout_all(
     user_id: str = Depends(get_current_user_id),
 ):
     await auth_service.logout_all_devices(user_id, credentials.credentials)
+
+
+from app.core.dependencies import get_current_user
+from app.models.user import User
+from app.schemas.user import UserMe
+
+@router.get("/me", response_model=UserMe)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+from app.schemas.user import UserUpdate, ChangePassword
+from app.core.security import verify_password, hash_password
+
+@router.patch("/me", response_model=UserMe)
+async def update_profile(
+    payload: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    for field, value in payload.model_dump(exclude_none=True).items():
+        setattr(current_user, field, value)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/me/change-password", status_code=status.HTTP_204_NO_CONTENT)
+async def change_password(
+    payload: ChangePassword,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from fastapi import HTTPException
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Password saat ini salah")
+    if len(payload.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password baru minimal 6 karakter")
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()

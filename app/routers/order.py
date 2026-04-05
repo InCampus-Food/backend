@@ -65,3 +65,11 @@ def cancel_order(
     current_user: User = Depends(get_current_user),
 ):
     return order_service.cancel_order(db, order_id, current_user)
+
+@router.post("/{order_id}/confirm-and-cook", response_model=OrderResponse)
+async def confirm_and_cook(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.canteen, UserRole.admin)),
+):
+    return order_service.confirm_and_cook(db, order_id, current_user)
