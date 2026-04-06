@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     MIDTRANS_SERVER_KEY: str
     MIDTRANS_CLIENT_KEY: str
     MIDTRANS_IS_PRODUCTION: bool = False
+    COOKIE_SECURE: bool = False  # Set True in production (HTTPS)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
