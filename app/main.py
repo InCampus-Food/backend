@@ -1,10 +1,33 @@
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+import asyncio
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import Base, engine
+from app.database import Base, engine, SessionLocal
 from app.routers import auth, canteen, menu, order, payment, delivery_point, notification, category, admin
-import app.models  # noqa: F401 — ensure all models registered before create_all
+from app.core.websocket import ws_manager
+import app.models  # noqa: F401
 
 Base.metadata.create_all(bind=engine)
+
+
+async def payment_expiry_worker():
+    """Background task — cek expired payments setiap 60 detik"""
+    while True:
+        await asyncio.sleep(60)
+        db = SessionLocal()
+        try:
+            from app.services.payment_service import expire_pending_payments
+            await expire_pending_payments(db)
+        finally:
+            db.close()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(payment_expiry_worker())
+    yield
+    task.cancel()
+
 
 app = FastAPI(
     title="inCampus Food Delivery API",
@@ -12,6 +35,7 @@ app = FastAPI(
     version="1.0.0",
     contact={"name": "inCampus Dev Team"},
     license_info={"name": "MIT"},
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -32,6 +56,17 @@ app.include_router(notification.router)
 app.include_router(category.router)
 app.include_router(admin.router)
 
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await ws_manager.connect(user_id, websocket)
+    try:
+        while True:
+            await websocket.receive_text()  # keep alive
+    except WebSocketDisconnect:
+        ws_manager.disconnect(user_id)
+
+
 @app.get("/", tags=["Health"])
 def root():
     return {
@@ -39,6 +74,7 @@ def root():
         "version": "1.0.0",
         "docs": "/docs",
     }
+
 
 @app.get("/health", tags=["Health"])
 def health():

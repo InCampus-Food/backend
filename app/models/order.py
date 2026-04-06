@@ -8,6 +8,7 @@ from app.database import Base
 
 
 class OrderStatus(str, enum.Enum):
+    waiting_for_payment = "waiting_for_payment"
     pending = "pending"
     confirmed = "confirmed"
     preparing = "preparing"
