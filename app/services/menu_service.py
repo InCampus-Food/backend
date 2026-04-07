@@ -69,14 +69,9 @@ def update_menu_item(
     return item
 
 
-def delete_menu_item(
-    db: Session,
-    canteen_id: int,
-    item_id: int,
-    current_user: User,
-) -> None:
-    canteen = get_canteen_by_id(db, canteen_id)
-    _assert_canteen_owner(canteen, current_user)
-    item = get_menu_item(db, canteen_id, item_id)
-    db.delete(item)
+def delete_menu_item(db, canteen_id, item_id, current_user):
+    item = get_menu_item(db, canteen_id, item_id)  # ganti ini
+    _assert_canteen_owner(item.canteen, current_user)
+    
+    item.is_available = False  # soft delete
     db.commit()

@@ -17,8 +17,9 @@ def list_menu(
     canteen_id: int,
     category: Optional[str] = None,
     db: Session = Depends(get_db),
+    include_unavailable: Optional[bool] = None
 ):
-    return menu_service.list_menu_items(db, canteen_id, category)
+    return menu_service.list_menu_items(db, canteen_id, category, include_unavailable)
 
 
 @router.post("", response_model=MenuItemResponse, status_code=status.HTTP_201_CREATED)
