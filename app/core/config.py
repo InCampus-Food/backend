@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     MIDTRANS_CLIENT_KEY: str
     MIDTRANS_IS_PRODUCTION: bool = False
     COOKIE_SECURE: bool = False  # Set True in production (HTTPS)
+    CLOUDINARY_CLOUD_NAME: str
+    CLOUDINARY_API_KEY: str
+    CLOUDINARY_API_SECRET: str
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
