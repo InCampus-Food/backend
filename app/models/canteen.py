@@ -20,3 +20,4 @@ class Canteen(Base):
     owner = relationship("User", back_populates="canteen")
     menu_items = relationship("MenuItem", back_populates="canteen")
     orders = relationship("Order", back_populates="canteen")
+    image_url = Column(String(500), nullable=True)

@@ -6,6 +6,7 @@ from app.database import Base, engine, SessionLocal
 from app.routers import auth, canteen, menu, order, payment, delivery_point, notification, category, admin
 from app.core.websocket import ws_manager
 import app.models  # noqa: F401
+from app.routers import upload
 
 Base.metadata.create_all(bind=engine)
 
@@ -55,6 +56,7 @@ app.include_router(payment.router)
 app.include_router(notification.router)
 app.include_router(category.router)
 app.include_router(admin.router)
+app.include_router(upload.router)
 
 
 @app.websocket("/ws/{user_id}")
